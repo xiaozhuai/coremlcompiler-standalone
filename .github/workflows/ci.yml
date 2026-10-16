@@ -1,0 +1,28 @@
+name: ci
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  package:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Verify
+        run: sha256sum --check SHA256SUMS
+
+      - name: Build
+        run: |
+          set -euo pipefail
+          mkdir -p build/libexec
+          cp -a Xcode.app/Contents/Developer build/libexec/
+          cp -a Xcode.app/Contents/SystemFrameworks build/libexec/
+          tar -C build -czf coremlcompiler-standalone.tar.gz libexec
+          sha256sum coremlcompiler-standalone.tar.gz > coremlcompiler-standalone.tar.gz.sha256
+          cat coremlcompiler-standalone.tar.gz.sha256
